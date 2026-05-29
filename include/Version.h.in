@@ -1,0 +1,2 @@
+#define Cipher_VERSION_MAJOR @Cipher_VERSION_MAJOR@
+#define Cipher_VERSION_MINOR @Cipher_VERSION_MINOR@
