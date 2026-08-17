@@ -13,7 +13,7 @@ enum class CipherType {
     Caesar, 
     AlphabetCaesar,
     Playfair, 
-    Vignere 
+    Vigenere 
 };
 
 #endif 

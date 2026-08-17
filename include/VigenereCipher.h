@@ -19,7 +19,9 @@ public:
 
     std::string getKey() const { return key_; }
 
-    virtual CipherType getType() const override { return CipherType::Vignere; }
+    virtual CipherType getType() const override { 
+        return CipherType::Vigenere; 
+    }
 
 private:
     std::string key_; 

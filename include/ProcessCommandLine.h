@@ -15,7 +15,7 @@ struct ProgramSettings {
     bool verbosePrinting{ false }; 
 };
 
-bool processCommandLine( const std::vector< std::string >& cmdArgs, 
+void processCommandLine( const std::vector< std::string >& cmdArgs, 
                          ProgramSettings& programSettings );
 
 #endif 

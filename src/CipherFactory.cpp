@@ -11,7 +11,7 @@ std::unique_ptr<Cipher> CipherFactory::makeCipher( const CipherType cipherType,
             return std::make_unique< CaesarCipher >( formattedKey );
         case CipherType::Playfair:
             return std::make_unique< PlayfairCipher >( formattedKey );
-        case CipherType::Vignere: 
+        case CipherType::Vigenere: 
             return std::make_unique< VigenereCipher >( formattedKey );
         case CipherType::AlphabetCaesar: 
             return std::make_unique< AlphabetCaesarCipher >( formattedKey );
