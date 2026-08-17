@@ -1,8 +1,10 @@
 #include "TextFormatting.h"
+#include "Alphabet.h"
 
 #include <vector> 
 #include <map> 
 #include <string> 
+#include <regex> 
 
 std::string numberToWordUsingCase( const char inputChar ){ 
     
@@ -63,4 +65,44 @@ std::string numberToWord( const char inputChar ){
         return numberList[ static_cast< size_t >( inputChar - '0' ) ];
     }
     return ""; 
+}
+
+std::string regexReplaceNumber( const std::string& inputString ){ 
+
+    static const std::vector< std::string > numberList = { 
+            "ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE" 
+    };
+
+    std::string result{""};
+    std::regex  replacementPattern{"\\d"}; 
+    std::smatch replacementMatch;  
+
+    auto stringPos = inputString.cbegin();
+    auto stringEnd = inputString.cend();
+
+    while ( std::regex_search( stringPos, stringEnd, replacementMatch, replacementPattern ) ){
+        result += replacementMatch.prefix();
+        result += numberList[ replacementMatch.str()[0] - '0' ];
+        stringPos += ( replacementMatch.position() + replacementMatch.length() );
+    }
+
+    result += replacementMatch.suffix();
+
+    return result;
+}
+
+std::string formatInputString( const std::string& inputString ){ 
+
+    std::string processedString{""};
+
+    for ( auto inputChar: inputString ){ 
+        if ( std::isalpha( inputChar ) ){
+            processedString += std::toupper( inputChar );
+        }
+        else if ( std::isdigit( inputChar ) ){
+            processedString += numberToWord( inputChar );
+        }
+    }
+
+    return processedString;
 }

@@ -2,116 +2,140 @@
 #include <fstream>
 #include <vector>  
 #include <string>
-#include <cctype> 
+#include <cctype>
+#include <memory> 
 
+#include "Cipher.h"
 #include "ProcessCommandLine.h"
 #include "TransformCharacter.h"
 #include "TextFormatting.h"
+#include "CipherMode.h"
+#include "CipherFactory.h"
+
 
 using namespace CharacterTransform; 
 
-std::string formatInputString( const std::string& inputString ){ 
-    std::string processedString{""};
-
-    for ( size_t i{0}; i < inputString.size(); i++ ){ 
-        if ( std::isalpha( inputString[i] ) ){
-            processedString += std::toupper( inputString[i] );
-        }
-        else if ( std::isdigit( inputString[i] ) ){
-            processedString += numberToWord( inputString[i] );
-        }
-    }
-
-    return processedString;
-}
-
-std::string processFormattedString( const std::string& inputString, 
-                                    const std::string& cipherKey, 
-                                    const int processMode ){
-     
-    std::string processedString{""}; 
-
-    for ( size_t i{0}; i < inputString.size(); i++ ){
-        processedString += shiftCharacter( inputString[i], cipherKey[0], processMode );
-    }
-
-    return processedString; 
-}
-
-
 int main( int argc, char** argv ){ 
+
+    // Convert argv to vector of strings
     const std::vector< std::string > cmdArgs{ argv, argv + argc }; 
 
-    std::string inputFileName{""};
-    std::string outputFileName{""};
-    std::string cipherKey{""};
-
-    int processMode{-1}; 
-    bool printVerbose{ false };
-
-    bool checkArgs = processCommandLine( cmdArgs, 
-                        inputFileName, outputFileName, cipherKey, 
-                        processMode, printVerbose );
+    // Process command line arguments
+    ProgramSettings programOpt; 
+    bool checkArgs = processCommandLine( cmdArgs, programOpt );
 
     if ( !checkArgs ){
         std::cout << "Invalid arguments specified, exiting" << std::endl;
         return 1;
     }
-    
-    if( printVerbose ){ 
-        std::cout << "Input  file = " << (inputFileName.empty() ? "None" : inputFileName) << std::endl;
-        std::cout << "Output file = " << (outputFileName.empty() ? "None" : outputFileName) << std::endl;
+
+    if ( CipherType::Unspecified == programOpt.cipherType ){ 
+       std::cout << "No cipher type specfied, exiting" << std::endl;
+       return 1; 
     }
 
-    if ( processMode < 0 ){
+    if ( CipherMode::Unspecified == programOpt.programMode ){
         std::cout << "No process specfied, exiting" << std::endl;
         return 1;
     }
 
+    // Formatted cipher key
+    std::string cipherKey = formatInputString( programOpt.cipherKey );
+
+    // Print input/output file names
+    if( programOpt.verbosePrinting ){ 
+        std::cout << "Input  file = " 
+                  << ( programOpt.inputFileName.empty() ? 
+                        "None" : programOpt.inputFileName ) 
+                  << std::endl;
+        std::cout << "Output file = " 
+                  << ( programOpt.outputFileName.empty() ? 
+                        "None" : programOpt.outputFileName ) 
+                  << std::endl;
+    }
+
+
     std::string textToProcess{""};
 
-    if ( inputFileName.empty() ){ 
+    // If input file specified, read from file otherwise read from
+    // keyboard
+    if ( programOpt.inputFileName.empty() ){ 
         std::getline( std::cin, textToProcess );
     }
     else { 
-        std::ifstream inputFile{ inputFileName };
+        std::ifstream inputFile{ programOpt.inputFileName };
         if ( inputFile.good() ){ 
-            inputFile >> textToProcess; 
+            std::getline( inputFile, textToProcess );
             inputFile.close();
         }
         else { 
-            std::cout << "Cannot open " << inputFileName << std::endl;
+            std::cout << "Cannot open " << programOpt.inputFileName << std::endl;
             return 1; 
         }
     }
 
-    if ( cipherKey.size() != 1 ){ 
-        std::cout << "Invalid cipher key specified" << std::endl;
-        return 1;
+    // Reformat input string
+    std::string textAfterFormatting = formatInputString( textToProcess );
+
+    if ( programOpt.verbosePrinting ){ 
+        std::cout << "Plain input text is " 
+                  << textToProcess << std::endl;
+        std::cout << "Processed input text is " 
+                  << textAfterFormatting << std::endl;
     }
 
    
-    std::string textAfterFormatting = formatInputString( textToProcess );
-    
 
-    if ( printVerbose ){ 
-        std::cout << "Plain input text is " << textToProcess << std::endl;
-        std::cout << "Processed input text is " << textAfterFormatting << std::endl;
+    // Encrypt/decrypt input string
+    std::string textAfterEncoding{""};
+   
+   
+
+    std::unique_ptr< Cipher > cipherImpl = 
+        CipherFactory::makeCipher( programOpt.cipherType, cipherKey );
+
+    if ( cipherImpl == nullptr ){ 
+        std::cout << "Unknown Cipher type" << std::endl;
+        return 1; 
     }
 
-    std::string textAfterEncoding = processFormattedString( textAfterFormatting, cipherKey, processMode );
+    // if ( programOpt.cipherType == CipherType::Caesar ){
+    //     CaesarCipher cipherImpl( cipherKey );
+        textAfterEncoding = cipherImpl->processString( textAfterFormatting, 
+                                                       programOpt.programMode );
+    //}
 
-    if ( outputFileName.empty() || printVerbose ){ 
-        std::cout << ( processMode ? "Decrypted" : "Encrypted" ) << " text is " << textAfterEncoding << std::endl; 
+    // if ( programOpt.cipherType == CipherType::Playfair ){
+    //     PlayfairCipher playfairImpl( cipherKey ); 
+    //     if ( programOpt.verbosePrinting ){ 
+    //         playfairImpl.printGrid();
+    //     }
+    //     textAfterEncoding = playfairImpl.processString( textAfterFormatting, 
+    //                                                     programOpt.programMode );
+    // }
+
+    // If output file name specified output to file otherwise 
+    // output to the screen (also output if verbose printing
+    // is enabled). 
+    if ( programOpt.outputFileName.empty() || programOpt.verbosePrinting  ){ 
+        if ( CipherMode::Encrypt == programOpt.programMode ){
+            std::cout << "Encrypted text is " << textAfterEncoding 
+                      << std::endl; 
+        }
+        else if ( CipherMode::Decrypt == programOpt.programMode ){ 
+            std::cout << "Decrypted text is " << textAfterEncoding 
+                      << std::endl; 
+        }
     }
     else {
-        std::ofstream outputFile{ outputFileName };
+        std::ofstream outputFile{ programOpt.outputFileName };
         if ( outputFile.good() ){ 
             outputFile << textAfterEncoding; 
             outputFile.close();
         }
         else {
-            std::cout << "Cannot open " << outputFileName << std::endl;
+            std::cout << "Cannot open " 
+                      << programOpt.outputFileName << std::endl;
         }
     }
 

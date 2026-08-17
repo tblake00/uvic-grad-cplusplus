@@ -3,11 +3,6 @@
 
 #include <string> 
 
-std::string numberToWordUsingCase( const char inputChar );
-
-std::string numberToWordUsingMap( const char inputChar );
-
-std::string numberToWord( const char inputChar ); 
-
+std::string formatInputString( const std::string& inputString ); 
 
 #endif 

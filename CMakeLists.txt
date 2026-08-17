@@ -36,10 +36,14 @@ add_executable(cipher
 	${CMAKE_CURRENT_SOURCE_DIR}/src/TextFormatting.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/TransformCharacter.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ProcessCommandLine.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/CaesarCipher.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/PlayfairCipher.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/VigenereCipher.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/CipherFactory.cpp
 )
 
 # Use c++17 standard for language features, PRIVATE specifies that this option applies
 # only to 'cipher'
 
-target_compile_features(cipher PRIVATE cxx_std_17)
+target_compile_features(cipher PRIVATE cxx_std_20)
 

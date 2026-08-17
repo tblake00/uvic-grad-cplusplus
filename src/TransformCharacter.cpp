@@ -1,12 +1,11 @@
 #include "TransformCharacter.h"
+#include "Alphabet.h"
 #include <string> 
-
-
 
 char AlphabetTransform::shiftPosition( const char inputChar, 
                                        const size_t offsetChar, 
                                        const int processMode ){ 
-    const size_t posChar{ AlphabetTransform::alphabetLetters.find( inputChar ) };
+    const size_t posChar{ Alphabet::letters.find( inputChar ) };
 
     if ( posChar == std::string::npos ){ 
         return inputChar; 
@@ -17,16 +16,16 @@ char AlphabetTransform::shiftPosition( const char inputChar,
     if ( 0 == processMode ){ 
         posTran = ( offsetChar + posChar ); 
     } else { 
-        posTran = ( AlphabetTransform::alphabetLength - offsetChar + posChar ); 
+        posTran = ( Alphabet::length - offsetChar + posChar ); 
     }
 
-    return AlphabetTransform::alphabetLetters[ posTran % AlphabetTransform::alphabetLength ];
+    return Alphabet::letters[ posTran % Alphabet::length ];
 }
 
 char AlphabetTransform::shiftCharacter( const char inputChar, 
                                         const char offsetChar, 
                                         const int processMode ){ 
-    const size_t posChar{ AlphabetTransform::alphabetLetters.find( offsetChar ) };
+    const size_t posChar{ Alphabet::letters.find( offsetChar ) };
 
     if ( posChar == std::string::npos ){ 
         return inputChar; 
